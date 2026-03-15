@@ -1,76 +1,63 @@
 import React, { useState } from 'react'
 import IlanCard from '../components/IlanCard'
-import { ILANLAR } from '../data/ilanlar'
+import { ILANLAR, MODULLER } from '../data/mock'
 
-const FILTERS = [
-  { key:'tumu',     label:'Tümü' },
-  { key:'takim',    label:'🚀 Takım' },
-  { key:'ev',       label:'🏡 Ev/Oda' },
-  { key:'ikinciel', label:'♻️ İkinci El' },
-  { key:'kayip',    label:'🔍 Kayıp' },
-  { key:'spor',     label:'⚽ Spor' },
-  { key:'not',      label:'📚 Not' },
-  { key:'etkinlik', label:'🎉 Etkinlik' },
-]
-
-export default function HomePage({ sidebarFilter }) {
+export default function HomePage() {
   const [filter, setFilter] = useState('tumu')
   const [q, setQ] = useState('')
 
-  const activeFilter = sidebarFilter !== 'all' ? sidebarFilter : filter
-
-  const ilanlar = ILANLAR.filter(i => {
-    const tipMatch = activeFilter === 'tumu' || i.tip === activeFilter
-    const qMatch   = !q || i.baslik.toLowerCase().includes(q.toLowerCase()) || i.aciklama.toLowerCase().includes(q.toLowerCase())
-    return tipMatch && qMatch
+  const list = ILANLAR.filter(i => {
+    const tipOk = filter === 'tumu' || i.tip === filter
+    const qOk   = !q.trim() || i.baslik.toLowerCase().includes(q.toLowerCase()) || i.aciklama.toLowerCase().includes(q.toLowerCase())
+    return tipOk && qOk
   })
 
   return (
-    <div className="fade-up">
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24 }}>
+    <div className="animate-fade-up px-4 pt-3">
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
         {[['247','Aktif İlan'],['1.2K','Öğrenci'],['89','Eşleşme'],['12','Etkinlik']].map(([n,l]) => (
-          <div key={l} style={{ background:'#111118', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:16 }}>
-            <div style={{ fontFamily:'Syne,sans-serif', fontSize:28, fontWeight:700, background:'linear-gradient(135deg,#7c6aff,#a855f7)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{n}</div>
-            <div style={{ fontSize:12, color:'#6b6b80', marginTop:2 }}>{l}</div>
+          <div key={l} className="bg-[#111119] border border-white/[0.06] rounded-2xl p-4">
+            <div className="font-syne text-[28px] font-extrabold grad-text">{n}</div>
+            <div className="text-[#6b6b82] text-xs mt-1">{l}</div>
           </div>
         ))}
       </div>
 
-      <div style={{
-        display:'flex', alignItems:'center', gap:10,
-        background:'#111118', border:'1px solid rgba(255,255,255,0.07)',
-        borderRadius:12, padding:'0 16px', marginBottom:16,
-      }}>
-        <span style={{ color:'#6b6b80' }}>🔎</span>
+      {/* Search */}
+      <div className="flex items-center gap-3 bg-[#1b1b27] border border-white/[0.08] rounded-2xl px-4 mb-4 focus-within:border-[#7c6aff] transition-colors">
+        <span className="text-[#6b6b82] text-lg">🔎</span>
         <input
-          value={q} onChange={e => setQ(e.target.value)}
-          placeholder="İlan, ders notu veya etkinlik ara..."
-          style={{
-            flex:1, background:'none', border:'none', outline:'none',
-            color:'#f0f0f5', fontSize:14, padding:'12px 0',
-            fontFamily:'DM Sans,sans-serif',
-          }}
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          placeholder="İlan, not veya etkinlik ara..."
+          className="flex-1 bg-transparent py-3 text-[14px] text-white"
         />
       </div>
 
-      <div style={{ display:'flex', gap:8, marginBottom:20, flexWrap:'wrap' }}>
-        {FILTERS.map(f => (
-          <button key={f.key} onClick={() => setFilter(f.key)} style={{
-            padding:'6px 14px', borderRadius:20, fontSize:12, fontWeight:500,
-            cursor:'pointer', fontFamily:'DM Sans,sans-serif',
-            background: activeFilter===f.key ? 'rgba(124,106,255,0.15)' : '#111118',
-            border: `1px solid ${activeFilter===f.key ? '#7c6aff' : 'rgba(255,255,255,0.07)'}`,
-            color: activeFilter===f.key ? '#7c6aff' : '#6b6b80',
-            transition:'all 0.15s',
-          }}>{f.label}</button>
+      {/* Filters */}
+      <div className="flex gap-2 overflow-x-auto no-scroll-bar pb-2 mb-4">
+        {MODULLER.map(m => (
+          <button
+            key={m.key}
+            onClick={() => setFilter(m.key)}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all ${
+              filter === m.key
+                ? 'bg-[rgba(124,106,255,0.15)] border-[#7c6aff] text-[#7c6aff]'
+                : 'bg-[#111119] border-white/[0.08] text-[#6b6b82]'
+            }`}
+          >
+            {m.icon} {m.label}
+          </button>
         ))}
       </div>
 
-      <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-        {ilanlar.length ? ilanlar.map(i => <IlanCard key={i.id} ilan={i} />) : (
-          <div style={{ textAlign:'center', padding:'60px 20px', color:'#6b6b80' }}>
-            <div style={{ fontSize:40, marginBottom:12 }}>🔍</div>
-            <div>Sonuç bulunamadı</div>
+      {/* Cards */}
+      <div className="flex flex-col gap-3 pb-4">
+        {list.length ? list.map(i => <IlanCard key={i.id} ilan={i} />) : (
+          <div className="text-center py-16 text-[#6b6b82]">
+            <div className="text-5xl mb-3">🔍</div>
+            <div className="text-sm">Sonuç bulunamadı</div>
           </div>
         )}
       </div>

@@ -1,26 +1,18 @@
 import React, { useEffect } from 'react'
 
-export default function Toast({ toast, onClose }) {
+export default function Toast({ msg, onDone }) {
   useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(onClose, 3500)
+    if (!msg) return
+    const t = setTimeout(onDone, 2800)
     return () => clearTimeout(t)
-  }, [toast])
+  }, [msg])
 
+  if (!msg) return null
   return (
-    <div style={{
-      position: 'fixed', bottom: 24, right: 24, zIndex: 500,
-      background: '#1a1a24', border: '1px solid rgba(255,255,255,0.13)',
-      borderRadius: 12, padding: '14px 18px', maxWidth: 300,
-      transform: toast ? 'translateY(0)' : 'translateY(120px)',
-      opacity: toast ? 1 : 0,
-      transition: 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)',
-      pointerEvents: toast ? 'all' : 'none',
-    }}>
-      {toast && <>
-        <div style={{ fontWeight:600, fontSize:13, marginBottom:3 }}>{toast.title}</div>
-        <div style={{ color:'#6b6b80', fontSize:12 }}>{toast.body}</div>
-      </>}
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] pointer-events-none">
+      <div className="bg-[#232333] border border-white/10 rounded-2xl px-5 py-3 text-sm font-semibold whitespace-nowrap shadow-2xl animate-fade-up">
+        {msg}
+      </div>
     </div>
   )
 }

@@ -1,80 +1,49 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const RENK = {
-  purple: { bg: 'rgba(124,106,255,0.12)', color: '#7c6aff' },
-  green:  { bg: 'rgba(34,211,160,0.1)',   color: '#22d3a0' },
-  amber:  { bg: 'rgba(245,158,11,0.1)',   color: '#f59e0b' },
-  red:    { bg: 'rgba(244,63,94,0.1)',    color: '#f43f5e' },
-  blue:   { bg: 'rgba(56,189,248,0.1)',   color: '#38bdf8' },
-}
+import { Tag } from './Tag'
+import { RENKLER } from '../data/mock'
 
 export default function IlanCard({ ilan }) {
-  const navigate = useNavigate()
-  const r = RENK[ilan.renk] || RENK.purple
-  const [hovered, setHovered] = React.useState(false)
+  const nav = useNavigate()
+  const r = RENKLER[ilan.renk] || RENKLER.purple
 
   return (
     <div
-      onClick={() => navigate(`/ilan/${ilan.id}`)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: '#111118',
-        border: `1px solid ${hovered ? 'rgba(255,255,255,0.13)' : 'rgba(255,255,255,0.07)'}`,
-        borderRadius: 14, padding: '18px 20px', cursor: 'pointer',
-        transition: 'all 0.2s', position: 'relative', overflow: 'hidden',
-        transform: hovered ? 'translateY(-2px)' : 'none',
-      }}
+      onClick={() => nav(`/ilan/${ilan.id}`)}
+      className="press bg-[#111119] border border-white/[0.06] rounded-[18px] p-4 cursor-pointer transition-colors hover:border-white/[0.12] active:bg-[#151520]"
     >
-      {hovered && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-          background: 'linear-gradient(90deg,#7c6aff,#a855f7)',
-        }} />
-      )}
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-        <div style={{ fontFamily: 'Syne, sans-serif', fontSize: 16, fontWeight: 600, letterSpacing: '-0.3px' }}>
+      {/* Başlık + badge */}
+      <div className="flex justify-between items-start gap-3 mb-2">
+        <h3 className="font-syne font-bold text-[15px] leading-snug flex-1">
           {ilan.icon} {ilan.baslik}
-        </div>
-        <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 12 }}>
-          {ilan.fiyat && <Badge text={ilan.fiyat} bg="rgba(245,158,11,0.12)" color="#f59e0b" />}
-          {ilan.kayipTip === 'buldum'    && <Badge text="Bulundu" bg="rgba(34,211,160,0.12)"  color="#22d3a0" />}
-          {ilan.kayipTip === 'kaybettim' && <Badge text="Kayıp"   bg="rgba(244,63,94,0.12)"   color="#f43f5e" />}
-          {ilan.tarih  && <Badge text={ilan.tarih}  bg="rgba(56,189,248,0.12)"  color="#38bdf8" />}
-          {ilan.indir  && <Badge text={ilan.indir}  bg={r.bg} color={r.color} />}
+        </h3>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          {ilan.fiyat && <Tag text={ilan.fiyat} custom={{ bg: 'rgba(245,158,11,0.12)', c: '#f59e0b' }} />}
+          {ilan.kayipTip === 'buldum'    && <Tag text="Bulundu" custom={{ bg: 'rgba(34,211,160,0.12)', c: '#22d3a0' }} />}
+          {ilan.kayipTip === 'kaybettim' && <Tag text="Kayıp"   custom={{ bg: 'rgba(244,63,94,0.12)',  c: '#f43f5e' }} />}
+          {ilan.tarih && <Tag text={ilan.tarih} custom={{ bg: 'rgba(56,189,248,0.1)', c: '#38bdf8' }} />}
+          {ilan.indir && <Tag text={ilan.indir} renk={ilan.renk} />}
         </div>
       </div>
 
-      <div style={{ color: '#6b6b80', fontSize: 13, lineHeight: 1.55, marginBottom: 12 }}>
-        {ilan.aciklama.length > 110 ? ilan.aciklama.slice(0, 110) + '…' : ilan.aciklama}
-      </div>
+      {/* Açıklama */}
+      <p className="text-[#6b6b82] text-[13px] leading-relaxed mb-3 line-clamp-2">
+        {ilan.aciklama}
+      </p>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        {ilan.etiketler.map(e => (
-          <Badge key={e} text={e} bg={r.bg} color={r.color} />
-        ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, color: '#6b6b80', fontSize: 12 }}>
-          <div style={{
-            width: 22, height: 22, borderRadius: '50%',
-            background: ilan.avatarColor + '22', color: ilan.avatarColor,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 9, fontWeight: 700,
-          }}>{ilan.avatar}</div>
+      {/* Footer */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {ilan.tags.map(t => <Tag key={t} text={t} renk={ilan.renk} />)}
+        <div className="ml-auto flex items-center gap-1.5 text-[#6b6b82] text-[11px]">
+          <div
+            className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold"
+            style={{ background: ilan.ac + '22', color: ilan.ac }}
+          >
+            {ilan.avatar}
+          </div>
           {ilan.kisi} · {ilan.zaman}
         </div>
       </div>
     </div>
-  )
-}
-
-function Badge({ text, bg, color }) {
-  return (
-    <span style={{
-      padding: '3px 10px', borderRadius: 6,
-      fontSize: 11, fontWeight: 600, letterSpacing: '0.2px',
-      background: bg, color,
-    }}>{text}</span>
   )
 }

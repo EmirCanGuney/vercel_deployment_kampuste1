@@ -1,95 +1,117 @@
-import React from 'react'
+import React, { useState } from 'react'
 import IlanCard from '../components/IlanCard'
-import { ILANLAR } from '../data/ilanlar'
+import { ILANLAR } from '../data/mock'
 
-export function ProfilPage() {
+function PageHeader({ title, subtitle, badge }) {
   return (
-    <div className="fade-up">
-      <div style={{ background:'#111118', border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, padding:24, textAlign:'center', marginBottom:16 }}>
-        <div style={{
-          width:72, height:72, borderRadius:'50%',
-          background:'linear-gradient(135deg,#7c6aff,#a855f7)',
-          display:'flex', alignItems:'center', justifyContent:'center',
-          fontFamily:'Syne,sans-serif', fontSize:26, fontWeight:700, color:'white',
-          margin:'0 auto 12px',
-        }}>EC</div>
-        <div style={{ fontFamily:'Syne,sans-serif', fontSize:18, fontWeight:700 }}>Emir Can Güney</div>
-        <div style={{ color:'#6b6b80', fontSize:13, marginTop:4 }}>Yazılım Mühendisliği · 3. Sınıf · OGÜ</div>
-        <div style={{ display:'flex', gap:8, justifyContent:'center', marginTop:14 }}>
-          {['Geliştirici','React','Spring Boot'].map((t,i) => (
-            <span key={t} style={{
-              padding:'3px 10px', borderRadius:6, fontSize:11, fontWeight:600,
-              background: ['rgba(124,106,255,0.12)','rgba(56,189,248,0.1)','rgba(34,211,160,0.1)'][i],
-              color: ['#7c6aff','#38bdf8','#22d3a0'][i],
-            }}>{t}</span>
-          ))}
+    <div className="mb-4">
+      <h1 className="font-syne text-[22px] font-extrabold">{title}</h1>
+      <p className="text-[#6b6b82] text-[13px] mt-1">{subtitle}</p>
+      {badge && (
+        <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/25 rounded-full px-3 py-1.5 text-[11px] font-semibold text-[#a855f7] mt-3">
+          <span className="animate-pulse-dot">●</span> {badge}
         </div>
-      </div>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-        {[['7','Açık İlanım'],['4','Eşleşmem'],['12','Yüklediğim Not'],['3','Katıldığım Etkinlik']].map(([n,l]) => (
-          <div key={l} style={{ background:'#111118', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:16 }}>
-            <div style={{ fontFamily:'Syne,sans-serif', fontSize:28, fontWeight:700, background:'linear-gradient(135deg,#7c6aff,#a855f7)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{n}</div>
-            <div style={{ fontSize:12, color:'#6b6b80', marginTop:2 }}>{l}</div>
-          </div>
-        ))}
-      </div>
+      )}
     </div>
   )
 }
 
-export function KayipPage({ showToast }) {
-  const ilanlar = ILANLAR.filter(i => i.tip === 'kayip')
+function FilterRow({ filters, active, onChange }) {
   return (
-    <div className="fade-up">
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
-        <div>
-          <div style={{ fontFamily:'Syne,sans-serif', fontSize:26, fontWeight:700, letterSpacing:'-0.5px' }}>Kayıp Eşyalar</div>
-          <div style={{ color:'#6b6b80', fontSize:14, marginTop:4 }}>AI destekli otomatik eşleştirme sistemi</div>
-        </div>
-      </div>
-      <div style={{
-        display:'inline-flex', alignItems:'center', gap:6,
-        background:'rgba(168,85,247,0.12)', border:'1px solid rgba(168,85,247,0.25)',
-        borderRadius:20, padding:'4px 12px', fontSize:11, fontWeight:600, color:'#a855f7', marginBottom:20,
-      }}>
-        <span className="pulse">●</span> AI Eşleştirme Aktif — Yeni ilan girişinde otomatik analiz yapılır
-      </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-        {ilanlar.map(i => <IlanCard key={i.id} ilan={i} />)}
-      </div>
+    <div className="flex gap-2 overflow-x-auto no-scroll-bar pb-2 mb-4">
+      {filters.map(f => (
+        <button
+          key={f.key}
+          onClick={() => onChange(f.key)}
+          className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all ${
+            active === f.key
+              ? 'bg-[rgba(124,106,255,0.15)] border-[#7c6aff] text-[#7c6aff]'
+              : 'bg-[#111119] border-white/[0.08] text-[#6b6b82]'
+          }`}
+        >
+          {f.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export function KayipPage() {
+  const [f, setF] = useState('tumu')
+  const kayiplar = ILANLAR.filter(i => i.tip === 'kayip')
+  const list = f === 'tumu' ? kayiplar : kayiplar.filter(i => i.kayipTip === f)
+  return (
+    <div className="animate-fade-up px-4 pt-3">
+      <PageHeader title="Kayıp Eşyalar" subtitle="AI destekli otomatik eşleştirme" badge="AI Eşleştirme Aktif" />
+      <FilterRow
+        filters={[{key:'tumu',label:'Tümü'},{key:'kaybettim',label:'Kaybettim'},{key:'buldum',label:'Buldum'}]}
+        active={f} onChange={setF}
+      />
+      <div className="flex flex-col gap-3 pb-4">{list.map(i => <IlanCard key={i.id} ilan={i} />)}</div>
     </div>
   )
 }
 
 export function NotlarPage() {
-  const ilanlar = ILANLAR.filter(i => i.tip === 'not')
+  const filters = [{key:'tumu',label:'Tümü'},{key:'mat',label:'Matematik'},{key:'fiz',label:'Fizik'},{key:'yaz',label:'Yazılım'}]
+  const [f, setF] = useState('tumu')
+  const list = ILANLAR.filter(i => i.tip === 'not')
   return (
-    <div className="fade-up">
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
-        <div>
-          <div style={{ fontFamily:'Syne,sans-serif', fontSize:26, fontWeight:700, letterSpacing:'-0.5px' }}>Ders Notları</div>
-          <div style={{ color:'#6b6b80', fontSize:14, marginTop:4 }}>Öğrenciler tarafından paylaşılan notlar</div>
-        </div>
-      </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-        {ilanlar.map(i => <IlanCard key={i.id} ilan={i} />)}
-      </div>
+    <div className="animate-fade-up px-4 pt-3">
+      <PageHeader title="Ders Notları" subtitle="Öğrenciler tarafından paylaşılan notlar" />
+      <FilterRow filters={filters} active={f} onChange={setF} />
+      <div className="flex flex-col gap-3 pb-4">{list.map(i => <IlanCard key={i.id} ilan={i} />)}</div>
     </div>
   )
 }
 
 export function EtkinlikPage() {
-  const ilanlar = ILANLAR.filter(i => i.tip === 'etkinlik')
+  const list = ILANLAR.filter(i => i.tip === 'etkinlik')
   return (
-    <div className="fade-up">
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
-        <div>
-          <div style={{ fontFamily:'Syne,sans-serif', fontSize:26, fontWeight:700, letterSpacing:'-0.5px' }}>Etkinlikler</div>
-          <div style={{ color:'#6b6b80', fontSize:14, marginTop:4 }}>Kampüs etkinlikleri ve duyurular</div>
+    <div className="animate-fade-up px-4 pt-3">
+      <PageHeader title="Etkinlikler" subtitle="Kampüs etkinlikleri ve duyurular" />
+      <div className="flex flex-col gap-3 pb-4">{list.map(i => <IlanCard key={i.id} ilan={i} />)}</div>
+    </div>
+  )
+}
+
+export function ProfilPage() {
+  return (
+    <div className="animate-fade-up px-4 pt-4 pb-8">
+      {/* Profil kartı */}
+      <div className="bg-[#111119] border border-white/[0.06] rounded-3xl p-6 text-center mb-4">
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-extrabold text-white mx-auto mb-3"
+          style={{ background: 'linear-gradient(135deg,#7c6aff,#a855f7)', fontFamily:'Syne,sans-serif' }}
+        >
+          EC
+        </div>
+        <div className="font-syne text-xl font-extrabold">Emir Can Güney</div>
+        <div className="text-[#6b6b82] text-sm mt-1">Yazılım Mühendisliği · 3. Sınıf · OGÜ</div>
+        <div className="flex gap-2 justify-center mt-3 flex-wrap">
+          {[['Geliştirici','rgba(124,106,255,.12)','#7c6aff'],['React','rgba(56,189,248,.1)','#38bdf8'],['Spring Boot','rgba(34,211,160,.1)','#22d3a0']].map(([t,bg,c]) => (
+            <span key={t} className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md" style={{background:bg,color:c}}>{t}</span>
+          ))}
         </div>
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-        {ilanlar.map(i => <IlanCard key={i.id} ilan={i} />)}
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        {[['7','Açık İlanım'],['4','Eşleşmem'],['12','Yüklediğim Not'],['3','Etkinliklerim']].map(([n,l]) => (
+          <div key={l} className="bg-[#111119] border border-white/[0.06] rounded-2xl p-4">
+            <div className="font-syne text-[28px] font-extrabold grad-text">{n}</div>
+            <div className="text-[#6b6b82] text-xs mt-1">{l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* İletişim */}
+      <div className="bg-[#111119] border border-white/[0.06] rounded-2xl p-4">
+        <div className="text-[11px] font-semibold text-[#6b6b82] uppercase tracking-wider mb-3">İletişim Bilgileri</div>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3 text-sm"><span className="text-xl">📧</span> emircan@ogu.edu.tr</div>
+          <div className="flex items-center gap-3 text-sm"><span className="text-xl">📱</span> +90 5** *** ** **</div>
+        </div>
       </div>
     </div>
   )

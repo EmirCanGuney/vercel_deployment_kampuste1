@@ -1,107 +1,98 @@
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ILANLAR } from '../data/ilanlar'
-
-const RENK = {
-  purple: { bg:'rgba(124,106,255,0.12)', color:'#7c6aff' },
-  green:  { bg:'rgba(34,211,160,0.1)',   color:'#22d3a0' },
-  amber:  { bg:'rgba(245,158,11,0.1)',   color:'#f59e0b' },
-  red:    { bg:'rgba(244,63,94,0.1)',    color:'#f43f5e' },
-  blue:   { bg:'rgba(56,189,248,0.1)',   color:'#38bdf8' },
-}
-
-function Badge({ text, bg, color }) {
-  return <span style={{ padding:'3px 10px', borderRadius:6, fontSize:11, fontWeight:600, background:bg, color }}>{text}</span>
-}
+import { ILANLAR, RENKLER } from '../data/mock'
+import { Tag } from '../components/Tag'
 
 export default function IlanDetay({ showToast }) {
   const { id } = useParams()
-  const navigate = useNavigate()
+  const nav = useNavigate()
   const ilan = ILANLAR.find(i => i.id === Number(id))
 
   if (!ilan) return (
-    <div style={{ textAlign:'center', padding:60, color:'#6b6b80' }}>
-      <div style={{ fontSize:40 }}>😕</div>
-      <div style={{ marginTop:12 }}>İlan bulunamadı</div>
-      <button onClick={() => navigate('/')} style={{ marginTop:16, padding:'8px 20px', borderRadius:8, background:'#7c6aff', color:'white', border:'none', cursor:'pointer' }}>Ana sayfaya dön</button>
+    <div className="flex flex-col items-center justify-center h-screen gap-4 text-[#6b6b82]">
+      <div className="text-5xl">😕</div>
+      <p>İlan bulunamadı</p>
+      <button onClick={() => nav('/')} className="px-6 py-2.5 bg-[#7c6aff] text-white rounded-2xl text-sm font-semibold">
+        Ana sayfaya dön
+      </button>
     </div>
   )
 
-  const r = RENK[ilan.renk] || RENK.purple
-  const isKayip   = ilan.tip === 'kayip'
-  const isNot     = ilan.tip === 'not'
-  const isEtkinlik = ilan.tip === 'etkinlik'
+  const isN = ilan.tip === 'not'
+  const isE = ilan.tip === 'etkinlik'
+  const isK = ilan.tip === 'kayip'
+  const actionLabel = isN ? '⬇️ Notu İndir' : isE ? '🎉 Katılacağım' : isK ? '🤝 İlgileniyorum' : '✋ Başvur / İlgileniyorum'
+  const actionMsg   = isN ? 'Not indiriliyor...' : isE ? 'Katılım talebiniz alındı!' : 'İlan sahibine bildirim gönderildi. Kabul ederse iletişim bilgileri paylaşılır.'
+
+  const infoRows = [
+    ['Yayınlayan', ilan.kisi],
+    ['Zaman', ilan.zaman],
+    ['Kampüs', 'OGÜ Ana Kampüs'],
+    ['Durum', '● Aktif'],
+    ...(ilan.fiyat ? [['Fiyat', ilan.fiyat]] : []),
+    ...(ilan.tarih ? [['Tarih', ilan.tarih]] : []),
+    ...(ilan.indir ? [['İndirme', ilan.indir]] : []),
+  ]
 
   return (
-    <div className="fade-up">
-      <button onClick={() => navigate(-1)} style={{
-        marginBottom:16, padding:'7px 16px', borderRadius:8, fontSize:13,
-        cursor:'pointer', border:'1px solid rgba(255,255,255,0.1)',
-        background:'#1a1a24', color:'#f0f0f5', fontFamily:'DM Sans,sans-serif',
-      }}>← Geri</button>
+    <div className="min-h-screen bg-[#09090f]">
+      {/* Header */}
+      <div className="sticky top-0 bg-[#09090f]/90 backdrop-blur-xl border-b border-white/[0.06] h-14 flex items-center px-4 gap-3 z-10">
+        <button
+          onClick={() => nav(-1)}
+          className="w-9 h-9 rounded-xl bg-[#1b1b27] border border-white/[0.08] flex items-center justify-center text-lg"
+        >
+          ←
+        </button>
+        <span className="font-syne font-bold text-base">İlan Detayı</span>
+      </div>
 
-      <div style={{ background:'#111118', border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, padding:24 }}>
-        {isKayip && (
-          <div style={{
-            display:'inline-flex', alignItems:'center', gap:6,
-            background:'rgba(168,85,247,0.12)', border:'1px solid rgba(168,85,247,0.25)',
-            borderRadius:20, padding:'4px 12px', fontSize:11, fontWeight:600, color:'#a855f7', marginBottom:16,
-          }}>
-            <span className="pulse">●</span> AI Eşleştirme Aktif
+      <div className="px-4 pt-5 pb-10 animate-fade-up">
+        {/* AI badge */}
+        {isK && (
+          <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/25 rounded-full px-3 py-1.5 text-[11px] font-semibold text-[#a855f7] mb-4">
+            <span className="animate-pulse-dot">●</span> AI Eşleştirme Aktif
           </div>
         )}
 
-        <div style={{ display:'flex', gap:8, marginBottom:10, flexWrap:'wrap' }}>
-          {ilan.etiketler.map(e => <Badge key={e} text={e} bg={r.bg} color={r.color} />)}
-          {ilan.kayipTip === 'buldum'    && <Badge text="Bulundu" bg="rgba(34,211,160,0.12)"  color="#22d3a0" />}
-          {ilan.kayipTip === 'kaybettim' && <Badge text="Kayıp"   bg="rgba(244,63,94,0.12)"   color="#f43f5e" />}
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mb-3">
+          {ilan.tags.map(t => <Tag key={t} text={t} renk={ilan.renk} />)}
+          {ilan.kayipTip === 'buldum'    && <Tag text="Bulundu" custom={{ bg:'rgba(34,211,160,0.12)', c:'#22d3a0' }} />}
+          {ilan.kayipTip === 'kaybettim' && <Tag text="Kayıp"   custom={{ bg:'rgba(244,63,94,0.12)',  c:'#f43f5e' }} />}
         </div>
 
-        <div style={{ fontFamily:'Syne,sans-serif', fontSize:22, fontWeight:700, marginBottom:8, letterSpacing:'-0.5px' }}>
+        {/* Başlık */}
+        <h1 className="font-syne text-2xl font-extrabold leading-snug mb-3">
           {ilan.icon} {ilan.baslik}
-        </div>
-        <div style={{ color:'#6b6b80', fontSize:14, lineHeight:1.7, margin:'14px 0' }}>{ilan.aciklama}</div>
+        </h1>
 
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:16 }}>
-          {[
-            ['Yayınlayan', ilan.kisi],
-            ['Zaman', ilan.zaman],
-            ['Kampüs', 'OGÜ Ana Kampüs'],
-            ['Durum', '● Aktif'],
-            ...(ilan.fiyat  ? [['Fiyat', ilan.fiyat]]  : []),
-            ...(ilan.tarih  ? [['Etkinlik Tarihi', ilan.tarih]] : []),
-            ...(ilan.indir  ? [['İndirme', ilan.indir]] : []),
-          ].map(([label, value]) => (
-            <div key={label} style={{ background:'#1a1a24', borderRadius:10, padding:'12px 14px' }}>
-              <div style={{ fontSize:11, color:'#6b6b80', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:4 }}>{label}</div>
-              <div style={{ fontSize:14, fontWeight:500, color: value === '● Aktif' ? '#22d3a0' : '#f0f0f5' }}>{value}</div>
+        {/* Açıklama */}
+        <p className="text-[#6b6b82] text-[14px] leading-relaxed mb-6">{ilan.aciklama}</p>
+
+        {/* Info grid */}
+        <div className="grid grid-cols-2 gap-2.5 mb-6">
+          {infoRows.map(([l, v]) => (
+            <div key={l} className="bg-[#1b1b27] rounded-2xl p-3 border border-white/[0.05]">
+              <div className="text-[10px] font-semibold text-[#6b6b82] uppercase tracking-wider mb-1">{l}</div>
+              <div className={`text-[13px] font-semibold ${v === '● Aktif' ? 'text-[#22d3a0]' : 'text-white'}`}>{v}</div>
             </div>
           ))}
         </div>
 
-        <div style={{ display:'flex', gap:10, marginTop:16 }}>
+        {/* Actions */}
+        <div className="flex gap-3">
           <button
-            onClick={() => showToast(
-              isNot ? '⬇️ İndiriliyor' : isEtkinlik ? '🎉 Katılım Kaydedildi' : '✋ Başvuru Alındı',
-              isNot ? 'Not dosyası indiriliyor...' : isEtkinlik ? 'Etkinliğe katılım talebiniz alındı.' : 'İlan sahibine bildirim gönderildi. Kabul ederse iletişim bilgileri paylaşılır.'
-            )}
-            style={{
-              flex:1, padding:'13px 20px', borderRadius:12, fontSize:14, fontWeight:600,
-              cursor:'pointer', border:'none', fontFamily:'DM Sans,sans-serif',
-              background:'#7c6aff', color:'white',
-            }}
+            onClick={() => showToast(actionMsg)}
+            className="flex-1 py-4 rounded-2xl text-[15px] font-bold bg-gradient-to-r from-[#7c6aff] to-[#a855f7] text-white press"
           >
-            {isNot ? '⬇️ Notu İndir' : isEtkinlik ? '🎉 Katılacağım' : isKayip ? '🤝 İlgileniyorum' : '✋ Başvur / İlgileniyorum'}
+            {actionLabel}
           </button>
           <button
-            onClick={() => showToast('🔖 Kaydedildi', 'İlan kaydedilenler listenize eklendi.')}
-            style={{
-              padding:'13px 20px', borderRadius:12, fontSize:14, fontWeight:600,
-              cursor:'pointer', border:'1px solid rgba(255,255,255,0.1)',
-              background:'#1a1a24', color:'#f0f0f5', fontFamily:'DM Sans,sans-serif',
-            }}
+            onClick={() => showToast('🔖 İlan kaydedildi')}
+            className="px-4 py-4 rounded-2xl bg-[#1b1b27] border border-white/[0.08] text-lg press"
           >
-            🔖 Kaydet
+            🔖
           </button>
         </div>
       </div>
